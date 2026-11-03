@@ -17,14 +17,12 @@ public class Server {
             int clientPort = receivePacket[0].getPort();
             System.out.printf("Client found at address: %s:%d%n", clientAddress.getHostAddress(), clientPort);
             PacketHelper helper = new PacketHelper();
-            helper.PacketSender(socket, "Server SetUp", clientAddress, clientPort);
+            helper.PacketSender(socket, "Connection setup", clientAddress, clientPort);
             helper.PacketReceiver(socket, buf, receivePacket);
             Scanner scanner = new Scanner(System.in);
             while (true) {
                 if (helper.PacketSender(socket, scanner, clientAddress, clientPort)) break;
             }
-
-
         } catch (SocketException e) {
             System.out.printf("Socket Exception %s", e.getMessage());
         } catch (IOException e) {

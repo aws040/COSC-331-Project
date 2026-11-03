@@ -2,13 +2,15 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketException;
 import java.util.Scanner;
 
 public class PacketHelper {
-    void PacketSender(DatagramSocket socket, String setUp, InetAddress serverAddress, int serverPort) throws IOException {
+    boolean running = true;
+    void PacketSender(DatagramSocket socket, String input, InetAddress serverAddress, int serverPort) throws IOException {
         DatagramPacket sendPacket = new DatagramPacket(
-                setUp.getBytes(),
-                setUp.length(),
+                input.getBytes(),
+                input.length(),
                 serverAddress,
                 serverPort);
         socket.send(sendPacket);
@@ -19,6 +21,14 @@ public class PacketHelper {
         String input = scanner.nextLine();
         if (input.equalsIgnoreCase("quit") || input.equalsIgnoreCase("exit")) {
             System.out.println("Closing Chat...");
+            DatagramPacket closingPacket = new DatagramPacket(
+                    "@closingPacket@".getBytes(),
+                    "@closingPacket@".length(),
+                    serverAddress,
+                    serverPort);
+            socket.send(closingPacket);
+            running = false;
+            socket.close();
             return true;
         }
         DatagramPacket sendPacket = new DatagramPacket(
@@ -31,12 +41,11 @@ public class PacketHelper {
     }
 
     void PacketReceiver(DatagramSocket socket, byte[] buf, DatagramPacket[] receivePacket) throws IOException {
-        final String[] message = {new String(receivePacket[0].getData(), 0, receivePacket[0].getLength())};
 
         Thread receiveThread = new Thread(() -> {
             try {
-                while (true) {
-                    MessageFormat(socket, buf, receivePacket, message);
+                while (running) {
+                    MessageFormat(socket, buf, receivePacket);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -45,14 +54,26 @@ public class PacketHelper {
         receiveThread.start();
     }
 
-    private void MessageFormat(DatagramSocket socket, byte[] buf, DatagramPacket[] receivePacket, String[] message) throws IOException {
+    private void MessageFormat(DatagramSocket socket, byte[] buf, DatagramPacket[] receivePacket) throws IOException {
         receivePacket[0] = new DatagramPacket(buf, buf.length);
+        try {
+            socket.receive(receivePacket[0]);
+           String message = new String(receivePacket[0].getData(), 0, receivePacket[0].getLength());
+            if (message.equals("@closingPacket@")) {
+                System.out.print("\r\033[2K");
+                System.out.println("Partner has closed connection...");
+                System.out.println("Shutting down program...");
+                running = false;
+                socket.close();
+                System.exit(0);
+            } else {
+                System.out.print("\r\033[2K");
+                System.out.println("[Partner]: " + message);
+                System.out.print("Enter message: ");
 
-        socket.receive(receivePacket[0]);
-
-        message[0] = new String(receivePacket[0].getData(), 0, receivePacket[0].getLength());
-        System.out.print("\r\033[2K");
-        System.out.println("[Partner]: " + message[0]);
-        System.out.print("Enter message: ");
+            }
+        } catch (SocketException e) {
+            System.out.println("The connection has been closed");
+        }
     }
 }

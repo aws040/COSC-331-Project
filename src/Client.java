@@ -20,20 +20,16 @@ public class Client {
                 serverPort = Integer.parseInt(ip.split(":")[1]);
             } else {
                 serverAddress = InetAddress.getByName(ip);
-                System.out.println("Please enter your port number: ");
+                System.out.print("Please enter your port number: ");
                 serverPort = scanner.nextInt();
             }
             PacketHelper helper = new PacketHelper();
+            helper.PacketSender(socket, "Connection setup", serverAddress, serverPort);
             final DatagramPacket[] receivePacket = {new DatagramPacket(buf, buf.length)};
             helper.PacketReceiver(socket, buf, receivePacket);
             while (true) {
-                try  {
-                    if (helper.PacketSender(socket, scanner, serverAddress, serverPort)) break;
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                if (helper.PacketSender(socket, scanner, serverAddress, serverPort)) break;
             }
-
         } catch (SocketException e) {
             System.out.printf("Socket Exception %s", e.getMessage());
         } catch (IOException e) {
