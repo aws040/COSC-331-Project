@@ -1,0 +1,2 @@
+jpackage --type app-image --input COSC_331_Project_jar --name ClientChat --main-jar COSC-331-Project-Client.jar --main-class Client --win-console --runtime-image "C:\Program Files\Java\jdk-24"
+jpackage --type app-image --input COSC_331_Project_jar --name ServerChat --main-jar COSC-331-Project-Server.jar --main-class Server --win-console --runtime-image "C:\Program Files\Java\jdk-24"

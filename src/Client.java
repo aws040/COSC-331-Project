@@ -35,5 +35,11 @@ public class Client {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        System.exit(0);
     }
 }

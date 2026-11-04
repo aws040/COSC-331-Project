@@ -1,12 +1,32 @@
 import java.io.IOException;
 import java.net.*;
 import java.util.Enumeration;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 public class Server {
     public static void main(String[] args) {
         String ip = getLocalNetworkIp();
-        int port = 4444;
+        Scanner scanner = new Scanner(System.in);
+        boolean valid = false;
+        System.out.print("Enter port to host on: ");
+        int port = 0;
+        while (!valid) {
+            if (scanner.hasNextInt()) {
+                port = scanner.nextInt();
+                if (port < 0 || port > 65535) {
+                    System.out.println("Invalid port");
+                    System.out.print("Enter port to host on: ");
+                } else {
+                    valid = true;
+                }
+            } else {
+                System.out.println("Invalid port");
+                System.out.print("Enter port to host on: ");
+                scanner.nextLine();
+            }
+        }
+        scanner.nextLine();
         try (DatagramSocket socket = new DatagramSocket(port, InetAddress.getByName(ip))) {
             byte[] buf = new byte[1024];
 
@@ -19,7 +39,6 @@ public class Server {
             PacketHelper helper = new PacketHelper();
             helper.PacketSender(socket, "Connection setup", clientAddress, clientPort);
             helper.PacketReceiver(socket, buf, receivePacket);
-            Scanner scanner = new Scanner(System.in);
             while (true) {
                 if (helper.PacketSender(socket, scanner, clientAddress, clientPort)) break;
             }
@@ -28,6 +47,12 @@ public class Server {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        System.exit(0);
     }
 
     public static String getLocalNetworkIp() {

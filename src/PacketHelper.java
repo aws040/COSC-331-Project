@@ -47,7 +47,7 @@ public class PacketHelper {
                 while (running) {
                     MessageFormat(socket, buf, receivePacket);
                 }
-            } catch (Exception e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         });
@@ -65,6 +65,11 @@ public class PacketHelper {
                 System.out.println("Shutting down program...");
                 running = false;
                 socket.close();
+                try {
+                    Thread.sleep(3000);
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
                 System.exit(0);
             } else {
                 System.out.print("\r\033[2K");
